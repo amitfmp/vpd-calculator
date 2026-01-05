@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPD Calculator - Polyhouse Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .input-with-unit {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        input[type="number"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .unit {
+            color: #666;
+            font-weight: 600;
+            min-width: 50px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+        }
+        
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .result-label {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+        
+        .interpretation {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .interpretation-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .interpretation-text {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        
+        .status-optimal {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-caution {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-warning {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #0066cc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .formula {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .result-value {
+                font-size: 2rem;
+            }
+        }
+        
+        .range-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .range-table th,
+        .range-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .range-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .range-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 VPD Calculator</h1>
+        <p class="subtitle">Vapor Pressure Deficit Tool for Polyhouse Management</p>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('leaf-air')">Leaf-to-Air VPD</button>
+            <button class="tab-button" onclick="switchTab('air-only')">Air-Only VPD</button>
+            <button class="tab-button" onclick="switchTab('reference')">VPD Reference</button>
+        </div>
+        
+        <!-- TAB 1: LEAF-TO-AIR VPD -->
+        <div id="leaf-air" class="tab-content active">
+            <div class="info-box">
+                <strong>Leaf-to-Air VPD:</strong> Measures the moisture difference between plant leaves (assumed 100% RH) and surrounding air. Drives transpiration and plant water uptake.
+            </div>
+            
+            <div class="formula">
+VPD = VP<sub>leaves</sub> - VP<sub>air</sub>
+            </div>
+            
+            <div class="two-column">
+                <div class="input-group">
+                    <label>Leaf Temperature (°C)</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="leafTemp" placeholder="e.g., 25" step="0.1" value="25">
+                        <span class="unit">°C</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Air Temperature (°C)</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="airTemp" placeholder="e.g., 24" step="0.1" value="24">
+                        <span class="unit">°C</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Relative Humidity (RH) (%)</label>
+                <div class="input-with-unit">
+                    <input type="number" id="rh" placeholder="e.g., 70" min="0" max="100" step="1" value="70">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="calculateLeafAirVPD()">Calculate Leaf-to-Air VPD</button>
+            
+            <div id="leafAirResult" class="result-box">
+                <div class="result-label">Calculated VPD (Leaf-to-Air)</div>
+                <div class="result-value" id="leafAirVPDValue">0.00</div>
+                <div class="unit" style="text-align: center; color: #666;">kPa</div>
+                <div class="interpretation">
+                    <div class="interpretation-title">Status & Recommendation</div>
+                    <div class="interpretation-text" id="leafAirInterpretation"></div>
+                    <div id="leafAirBadge"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 2: AIR-ONLY VPD -->
+        <div id="air-only" class="tab-content">
+            <div class="info-box">
+                <strong>Air-Only VPD:</strong> Measures the air's drying power—how much additional moisture the air can hold before saturation. Higher values = drier air.
+            </div>
+            
+            <div class="formula">
+VPD = VP<sub>max_air</sub> - VP<sub>actual_air</sub>
+            </div>
+            
+            <div class="two-column">
+                <div class="input-group">
+                    <label>Air Temperature (°C)</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="airTempOnly" placeholder="e.g., 24" step="0.1" value="24">
+                        <span class="unit">°C</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Relative Humidity (RH) (%)</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="rhOnly" placeholder="e.g., 70" min="0" max="100" step="1" value="70">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="calculateAirOnlyVPD()">Calculate Air-Only VPD</button>
+            
+            <div id="airOnlyResult" class="result-box">
+                <div class="result-label">Calculated VPD (Air-Only)</div>
+                <div class="result-value" id="airOnlyVPDValue">0.00</div>
+                <div class="unit" style="text-align: center; color: #666;">kPa</div>
+                <div class="interpretation">
+                    <div class="interpretation-title">Status & Recommendation</div>
+                    <div class="interpretation-text" id="airOnlyInterpretation"></div>
+                    <div id="airOnlyBadge"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 3: VPD REFERENCE -->
+        <div id="reference" class="tab-content">
+            <h3 style="margin-bottom: 20px; color: #333;">VPD Ranges & Agricultural Implications</h3>
+            
+            <table class="range-table">
+                <thead>
+                    <tr>
+                        <th>VPD Range (kPa)</th>
+                        <th>Condition</th>
+                        <th>Plant Response</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>0 - 0.5</strong></td>
+                        <td>Very High Humidity</td>
+                        <td>Slow transpiration, fungal disease risk, weak growth</td>
+                        <td>↑ Ventilation, ↓ Misting, Improve air circulation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>0.5 - 1.0</strong></td>
+                        <td>High Humidity</td>
+                        <td>Good growth, lower transpiration stress</td>
+                        <td>Moderate ventilation, monitor for diseases</td>
+                    </tr>
+                    <tr style="background: #d4edda;">
+                        <td><strong>1.0 - 1.5</strong></td>
+                        <td><strong>Optimal Range</strong></td>
+                        <td>Best growth, optimal water uptake, healthy development</td>
+                        <td>✓ Maintain current conditions (TARGET)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>1.5 - 2.0</strong></td>
+                        <td>Moderate Stress</td>
+                        <td>Increased transpiration, mild water stress</td>
+                        <td>↑ Irrigation, Activate fogging system</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2.0+</strong></td>
+                        <td>High Stress/Dry</td>
+                        <td>Excessive transpiration, severe stress, wilting risk</td>
+                        <td>↑ Fogging frequency, ↓ Light, Increase irrigation</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 25px; padding: 20px; background: #fff9e6; border-radius: 8px; border-left: 4px solid #ff9800;">
+                <strong style="color: #ff6f00;">🎯 For Your Polyhouse:</strong>
+                <p style="margin-top: 10px; color: #666; line-height: 1.6;">
+                    Your Arduino code targets <strong>VPD &gt; 1.0 kPa</strong> to activate fogging (when T &gt; 32°C or VPD &gt; 1). This is a good strategy to keep conditions within the optimal range and prevent excessive water stress on plants like cucumber.
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 VPD Calculator for Controlled Environment Agriculture | Formula: Magnus Formula (1844)</p>
+            <p>Designed for polyhouse cucumber and horticultural crop management</p>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Magnus Formula for Saturation Vapor Pressure (SVP)
+        function getSVP(tempC) {
+            // Magnus formula: SVP = 0.6108 * exp((17.27 * T) / (T + 237.3))
+            const exponent = (17.27 * tempC) / (tempC + 237.3);
+            return 0.6108 * Math.exp(exponent);
+        }
+        
+        function calculateLeafAirVPD() {
+            const leafTemp = parseFloat(document.getElementById('leafTemp').value);
+            const airTemp = parseFloat(document.getElementById('airTemp').value);
+            const rh = parseFloat(document.getElementById('rh').value);
+            
+            if (isNaN(leafTemp) || isNaN(airTemp) || isNaN(rh)) {
+                alert('Please enter valid values for all fields');
+                return;
+            }
+            
+            // VP at leaf (RH = 100%)
+            const vpLeaves = getSVP(leafTemp);
+            
+            // VP in air (actual)
+            const vpAirMax = getSVP(airTemp);
+            const vpAirActual = (rh / 100) * vpAirMax;
+            
+            // VPD = VP leaves - VP air actual
+            const vpd = vpLeaves - vpAirActual;
+            
+            document.getElementById('leafAirVPDValue').textContent = vpd.toFixed(2);
+            
+            let interpretation = '';
+            let statusClass = '';
+            
+            if (vpd < 0.5) {
+                interpretation = '<strong>Very High Humidity:</strong> Slow transpiration, high fungal disease risk. Increase ventilation and reduce misting.';
+                statusClass = 'status-warning';
+            } else if (vpd < 1.0) {
+                interpretation = '<strong>High Humidity:</strong> Good growth conditions with lower transpiration stress. Monitor for fungal diseases.';
+                statusClass = 'status-caution';
+            } else if (vpd <= 1.5) {
+                interpretation = '<strong>✓ OPTIMAL:</strong> Best conditions for growth, optimal water uptake, and healthy plant development. Maintain current environment.';
+                statusClass = 'status-optimal';
+            } else if (vpd < 2.0) {
+                interpretation = '<strong>Moderate Stress:</strong> Increased transpiration and mild water stress. Activate fogging system and increase irrigation.';
+                statusClass = 'status-caution';
+            } else {
+                interpretation = '<strong>High Stress/Dry:</strong> Severe transpiration, wilting risk. Increase fogging frequency, reduce light intensity, and ensure adequate water.';
+                statusClass = 'status-warning';
+            }
+            
+            document.getElementById('leafAirInterpretation').innerHTML = interpretation;
+            document.getElementById('leafAirBadge').innerHTML = `<span class="status-badge ${statusClass}">${vpd < 1.5 && vpd >= 1.0 ? '✓ OPTIMAL RANGE' : vpd < 2.0 ? 'ⓘ ADJUST ENVIRONMENT' : '⚠ TAKE ACTION'}</span>`;
+            document.getElementById('leafAirResult').classList.add('show');
+        }
+        
+        function calculateAirOnlyVPD() {
+            const airTemp = parseFloat(document.getElementById('airTempOnly').value);
+            const rh = parseFloat(document.getElementById('rhOnly').value);
+            
+            if (isNaN(airTemp) || isNaN(rh)) {
+                alert('Please enter valid values for all fields');
+                return;
+            }
+            
+            // VP max at air temperature
+            const vpAirMax = getSVP(airTemp);
+            
+            // VP actual in air
+            const vpAirActual = (rh / 100) * vpAirMax;
+            
+            // VPD = VP max - VP actual
+            const vpd = vpAirMax - vpAirActual;
+            
+            document.getElementById('airOnlyVPDValue').textContent = vpd.toFixed(2);
+            
+            let interpretation = '';
+            let statusClass = '';
+            
+            if (vpd < 0.5) {
+                interpretation = '<strong>Low Drying Power:</strong> Air is nearly saturated. Limited evaporation potential. Increase ventilation.';
+                statusClass = 'status-warning';
+            } else if (vpd < 1.0) {
+                interpretation = '<strong>Moderate Drying Power:</strong> Balanced moisture absorption capacity. Good for most crops.';
+                statusClass = 'status-caution';
+            } else if (vpd <= 1.5) {
+                interpretation = '<strong>✓ GOOD:</strong> Air has good evaporation capacity. Suitable for most horticultural crops.';
+                statusClass = 'status-optimal';
+            } else if (vpd < 2.0) {
+                interpretation = '<strong>High Drying Power:</strong> Air is quite dry with strong evaporation potential. May cause plant stress.';
+                statusClass = 'status-caution';
+            } else {
+                interpretation = '<strong>Very High Drying Power:</strong> Extremely dry air. High evaporation rate and transpiration stress. Activate fogging/misting.';
+                statusClass = 'status-warning';
+            }
+            
+            document.getElementById('airOnlyInterpretation').innerHTML = interpretation;
+            document.getElementById('airOnlyBadge').innerHTML = `<span class="status-badge ${statusClass}">${vpd <= 1.5 ? '✓ ACCEPTABLE' : '⚠ INCREASE HUMIDITY'}</span>`;
+            document.getElementById('airOnlyResult').classList.add('show');
+        }
+    </script>
+</body>
+</html>
